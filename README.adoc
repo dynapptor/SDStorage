@@ -1,0 +1,133 @@
+= SDStorage Library
+:toc: left
+:icons: font
+:sectnums:
+:license: MIT License
+
+== Introduction
+
+The SDStorage library provides a synchronous interface for emulating EEPROM-like storage on an SD card, ideal for configuration and state storage in home automation systems. Derived from `StorageBase`, it supports reliable read/write operations with verification, optimized for shutdown-time writes. Compatible with ESP32, ESP8266, AVR, and RP2040 platforms, it uses a 4-byte header for size metadata and integrates with `Logger` for error reporting.
+
+== Features
+
+* Synchronous, blocking API for straightforward usage.
+* Write verification for data integrity (`writeu8`, `writeArray`, `updateArray`).
+* Efficient block-based updates to minimize SD card wear.
+* Shutdown-time write optimization (~10–15 ms for 100 bytes).
+* Platform support for ESP32, ESP8266, AVR, and RP2040.
+* Error logging for SD card operations via `Logger`.
+* 8.3 filename format with 4-byte size header.
+
+== Installation
+
+To use the SDStorage library in your Arduino or PlatformIO project:
+
+1. Install dependencies: `StorageBase`, `Logger`, `Callback`, `SD`, and `SPI` libraries.
+2. Clone or download the library:
++
+[source,bash]
+----
+git clone https://github.com/dynapptor/SDStorage.git
+----
+3. For Arduino IDE:
+   - Copy the `SDStorage` folder to your Arduino `libraries` directory.
+4. For PlatformIO:
+   - Place the `SDStorage` folder in the project's `lib/` directory or add as a dependency in `platformio.ini`:
++
+[source,ini]
+----
+lib_deps = https://github.com/dynapptor/SDStorage.git
+----
+5. Include the library in your sketch:
++
+[source,cpp]
+----
+#include <SDStorage.h>
+----
+
+== Dependencies
+
+* *Arduino SD Library*: For SD card file operations.
+* *Arduino SPI Library*: For SD card communication.
+* *StorageBase*: Base class for storage operations.
+* *Logger*: For error logging.
+* *Callback*: Required by the `Logger` library.
+
+Ensure these libraries are installed before using `SDStorage`.
+
+== Usage
+
+Below is an example demonstrating initialization, reading, writing, and formatting with the SDStorage library.
+
+[source,cpp]
+----
+// Initialize 32 KB storage with file "storage.bin"
+#include <SD.h>
+#include <SDStorage.h>
+
+SDStorage sd;
+
+void setup() {
+  Serial.begin(115200);
+  if (!sd.begin(32768, "storage.bin", 4)) {
+    Serial.println("SD initialization failed!");
+    while (1);
+  }
+
+  // Read 100 bytes of configuration at startup
+  uint8_t config[100];
+  sd.readArray(0, config, 100);
+
+  // Write configuration before shutdown
+  uint8_t newConfig[100] = {0x55};
+  if (sd.writeArray(0, newConfig, 100)) {
+    Serial.println("Config saved successfully");
+  }
+
+  // Update configuration (e.g., from web interface)
+  uint8_t updatedConfig[50] = {0xAA};
+  sd.updateArray(100, updatedConfig, 50);
+
+  // Format storage with zeros
+  sd.format(0x00);
+}
+
+void loop() {}
+----
+
+== Configuration Options
+
+* *Storage Size*: Set via `begin` (e.g., 4 KB to 64 KB).
+* *Filename*: 8.3 format (max 12 characters), set via `begin`.
+* *Chip Select Pin*: Default pin 4, configurable via `begin`.
+* *Write Buffer*: Flushes every 512 bytes or via `flush`.
+
+== Notes
+
+* *Address Validation*: Uses `isValidAddress` with a 4-byte header offset.
+* *Performance*: Block-based operations optimize read/write speed.
+* *SD Card Lifespan*: `updateArray` minimizes write cycles.
+* *Platform Considerations*:
+  - ESP32/ESP8266/RP2040: Efficient for larger buffers, FreeRTOS support.
+  - AVR: Suitable for constrained environments.
+* *Error Handling*: SD errors logged via `Logger`.
+
+== Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/YourFeature`).
+3. Commit your changes (`git commit -m 'Add YourFeature'`).
+4. Push to the branch (`git push origin feature/YourFeature`).
+5. Open a pull request.
+
+Please follow the project's coding style and include tests where applicable.
+
+== License
+
+This project is licensed under the MIT License. See the link:LICENSE.txt[LICENSE] file for details.
+
+== Contact
+
+For questions or feedback, please open an issue on the project's GitHub repository.

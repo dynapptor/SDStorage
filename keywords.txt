@@ -1,0 +1,28 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+SDStorage	KEYWORD1
+
+#######################################
+# Methods and Constructors (KEYWORD2)
+#######################################
+begin		KEYWORD2
+readu8		KEYWORD2
+writeu8		KEYWORD2
+updateu8	KEYWORD2
+format		KEYWORD2
+getSize		KEYWORD2
+readArray	KEYWORD2
+writeArray	KEYWORD2
+updateArray	KEYWORD2
+flush		KEYWORD2
+verifyArray	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#################################
+# FILE_HEADER_SIZE	LITERAL1
